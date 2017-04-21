@@ -12,6 +12,8 @@ node_modules/**
 
 .vscode
 
+migrations/**
+
 [Cc]ache/**	# Myst cache folder
 [Pp]ublic/**	# Myst cyclopedia & user files
 _[Oo]ld*/**	# Old content

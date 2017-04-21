@@ -12,6 +12,9 @@ using OpenIddict;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using OpenIddict.Core;
+using OpenIddict.Models;
+using System.Threading;
 
 public class DbSeeder
 {
@@ -20,15 +23,17 @@ public class DbSeeder
     private RoleManager<IdentityRole> RoleManager;
     private UserManager<ApplicationUser> UserManager;
     private IConfiguration Configuration;
+    OpenIddictApplicationManager<OpenIddictApplication> OpenIddictManager;
     #endregion Private Members
 
     #region Constructor
-    public DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> roleManager, UserManager<ApplicationUser> userManager, IConfiguration configuration)
+    public DbSeeder(ApplicationDbContext dbContext, RoleManager<IdentityRole> roleManager, UserManager<ApplicationUser> userManager, IConfiguration configuration, OpenIddictApplicationManager<OpenIddictApplication> openIddictManager)
     {
         DbContext = dbContext;
         RoleManager = roleManager;
         UserManager = userManager;
         Configuration = configuration;
+        OpenIddictManager = openIddictManager;
     }
     #endregion Constructor
 
@@ -38,7 +43,10 @@ public class DbSeeder
         // Create the Db if it doesn’t exist
         DbContext.Database.EnsureCreated();
         // Create default Application
-        if (!DbContext.Applications.Any()) CreateApplication();
+        if ((await OpenIddictManager.FindByClientIdAsync(Configuration["Authentication:OpenIddict:ClientId"], new CancellationToken())) == null)
+        {
+            CreateApplication().GetAwaiter().GetResult();
+        } 
         // Create default Users
         if (await DbContext.Users.CountAsync() == 0) await CreateUsersAsync();
         // Create default Items (if there are none) and Comments
@@ -47,19 +55,20 @@ public class DbSeeder
     #endregion Public Methods
 
     #region Seed Methods
-    private void CreateApplication()
+    private async Task CreateApplication()
     {
-        DbContext.Applications.Add(new OpenIddictApplication
+        await OpenIddictManager.CreateAsync(new OpenIddictApplication
         {
             Id = Configuration["Authentication:OpenIddict:ApplicationId"],
             DisplayName = Configuration["Authentication:OpenIddict:DisplayName"],
-            RedirectUri = Configuration["Authentication:OpenIddict:TokenEndPoint"],
-            LogoutRedirectUri = "/",
+            RedirectUri = Configuration["Authentication:OpenIddict:Authority"] + Configuration["Authentication:OpenIddict:TokenEndPoint"],
+            LogoutRedirectUri = Configuration["Authentication:OpenIddict:Authority"],
             ClientId = Configuration["Authentication:OpenIddict:ClientId"],
-            ClientSecret = Crypto.HashPassword(Configuration["Authentication:OpenIddict:ClientSecret"]),
+            // ClientSecret = Crypto.HashPassword(Configuration["Authentication:OpenIddict:ClientSecret"]),
             Type = OpenIddictConstants.ClientTypes.Public
-        });
-        DbContext.SaveChanges();
+        }, new CancellationToken());
+        //This is the new way of adding a client secret, although it won't work if the application is marked as public.
+        //}, Configuration["Authentication:OpenIddict:ClientSecret"], new CancellationToken());
     }
 
     private async Task CreateUsersAsync()

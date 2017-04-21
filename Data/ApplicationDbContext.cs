@@ -8,7 +8,7 @@ using OpenIddict;
 
 namespace OpenGameListWebApp.Data
 {
-    public class ApplicationDbContext : OpenIddictDbContext<ApplicationUser>
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         #region Constructor
         public ApplicationDbContext(DbContextOptions options) : base(options)

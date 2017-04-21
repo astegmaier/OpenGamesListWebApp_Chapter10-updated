@@ -17,6 +17,8 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using OpenGameListWebApp.Data.Users;
 using OpenGameListWebApp.Classes;
 using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Core;
+using OpenIddict.Models;
 
 namespace OpenGameList
 {
@@ -63,14 +65,15 @@ namespace OpenGameList
                 .AddDefaultTokenProviders();
 
             // Add ApplicationDbContext.
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"])
-                );
+            services.AddDbContext<ApplicationDbContext>(options => 
+            {
+                options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]);
+                options.UseOpenIddict();
+            });
 
             // Register the OpenIddict services, including the default Entity Framework stores.
-            services.AddOpenIddict<ApplicationUser, ApplicationDbContext>()
-                // Integrate with EFCore
-                .AddEntityFramework<ApplicationDbContext>()
+            services.AddOpenIddict(options => {
+                options.AddEntityFrameworkCoreStores<ApplicationDbContext>()
                 // Use Json Web Tokens (JWT)
                 .UseJsonWebTokens()
                 // Set a custom token endpoint (default is /connect/token)
@@ -89,6 +92,9 @@ namespace OpenGameList
                 // Register a new ephemeral key for development.
                 // We will register a X.509 certificate in production.
                 .AddEphemeralSigningKey();
+            });
+                // Integrate with EFCore
+                
 
             // Add ApplicationDbContext's DbSeeder
             services.AddSingleton<DbSeeder>();

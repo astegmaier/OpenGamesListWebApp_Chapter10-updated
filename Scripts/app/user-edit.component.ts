@@ -121,21 +121,21 @@ export class UserEditComponent {
         if (!this.isRegister) {
             this.userForm.addControl("passwordCurrent",
                 new FormControl("", Validators.required));
-            var password = this.userForm.find("password");
+            var password = this.userForm.get("password");
             password.clearValidators();
             password.setValidators(Validators.minLength(6));
             var passwordConfirm =
-                this.userForm.find("passwordConfirm");
+                this.userForm.get("passwordConfirm");
             passwordConfirm.clearValidators();
             passwordConfirm.setValidators(Validators.minLength(6));
 
             this.authService.get().subscribe(
                 user => {
-                    this.userForm.find("username")
+                    this.userForm.get("username")
                         .setValue(user.UserName);
-                    this.userForm.find("email")
+                    this.userForm.get("email")
                         .setValue(user.Email);
-                    this.userForm.find("displayName")
+                    this.userForm.get("displayName")
                         .setValue(user.DisplayName);
                 }
             );

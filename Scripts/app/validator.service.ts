@@ -1,4 +1,4 @@
-﻿import { AbstractControl } from '@angular/common';
+﻿import { AbstractControl } from "@angular/forms";
 
 export class ValidatorService {
     static email(control: AbstractControl) {
