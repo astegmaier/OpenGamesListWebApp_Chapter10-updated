@@ -10,7 +10,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using OpenGameListWebApp.Data;
-using Nelibur.ObjectMapper;
 using OpenGameListWebApp.Data.Items;
 using OpenGameListWebApp.ViewModels;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -19,6 +18,7 @@ using OpenGameListWebApp.Classes;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Core;
 using OpenIddict.Models;
+using AutoMapper;
 
 namespace OpenGameList
 {
@@ -35,6 +35,11 @@ namespace OpenGameList
                 .AddJsonFile(
                     $"appsettings.{env.EnvironmentName}.json",
                     optional: true)
+                .AddJsonFile(
+                    "appsettings.overrides.json",
+                    optional: true,
+                    reloadOnChange: true
+                )
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
         }
@@ -98,6 +103,15 @@ namespace OpenGameList
 
             // Add ApplicationDbContext's DbSeeder
             services.AddSingleton<DbSeeder>();
+
+            //Adding AutoMapper http://dotnetthoughts.net/using-automapper-in-aspnet-core-project/
+            var autoMapperConfig = new AutoMapper.MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<Item, ItemViewModel>();
+            });
+
+            var mapper = autoMapperConfig.CreateMapper();
+            services.AddSingleton<IMapper>(mapper);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -183,9 +197,6 @@ namespace OpenGameList
 
             // Add MVC to the pipeline
             app.UseMvc();
-
-            // TinyMapper binding configuration
-            TinyMapper.Bind<Item, ItemViewModel>();
 
             // Seed the Database (if needed)
             try

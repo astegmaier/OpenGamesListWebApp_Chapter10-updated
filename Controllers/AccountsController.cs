@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -19,10 +20,12 @@ namespace OpenGameListWebApp.Controllers
         public AccountsController(
             ApplicationDbContext context,
             SignInManager<ApplicationUser> signInManager,
-            UserManager<ApplicationUser> userManager) : base(
+            UserManager<ApplicationUser> userManager,
+            IMapper mapper) : base(
             context,
             signInManager,
-            userManager)
+            userManager,
+            mapper)
         { }
         #endregion Constructor
 

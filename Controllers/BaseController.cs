@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using OpenGameListWebApp.Data;
 using OpenGameListWebApp.Data.Users;
 using Newtonsoft.Json;
+using AutoMapper;
 
 namespace OpenGameListWebApp.Controllers
 {
@@ -16,18 +17,21 @@ namespace OpenGameListWebApp.Controllers
         protected ApplicationDbContext DbContext;
         protected SignInManager<ApplicationUser> SignInManager;
         protected UserManager<ApplicationUser> UserManager;
+        protected IMapper Mapper;
         #endregion Private Fields
 
         #region Constructor
         public BaseController(
             ApplicationDbContext context,
             SignInManager<ApplicationUser> signInManager,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            IMapper mapper)
         {
             // Dependency Injection
             DbContext = context;
             SignInManager = signInManager;
             UserManager = userManager;
+            Mapper = mapper;
         }
         #endregion Constructor
 

@@ -7,12 +7,12 @@ using OpenGameListWebApp.ViewModels;
 using Newtonsoft.Json;
 using OpenGameListWebApp.Data;
 using OpenGameListWebApp.Data.Items;
-using Nelibur.ObjectMapper;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using OpenGameListWebApp.Classes;
 using Microsoft.AspNetCore.Identity;
 using OpenGameListWebApp.Data.Users;
+using AutoMapper;
 
 namespace OpenGameListWebApp.Controllers
 {
@@ -22,10 +22,12 @@ namespace OpenGameListWebApp.Controllers
         public ItemsController(
             ApplicationDbContext context,
             SignInManager<ApplicationUser> signInManager,
-            UserManager<ApplicationUser> userManager) : base(
+            UserManager<ApplicationUser> userManager,
+            IMapper mapper) : base(
             context,
             signInManager,
-            userManager)
+            userManager,
+            mapper)
         { }
         #endregion Constructor
 
@@ -49,7 +51,7 @@ namespace OpenGameListWebApp.Controllers
         public IActionResult Get(int id)
         {
             var item = DbContext.Items.Where(i => i.Id == id).FirstOrDefault();
-            if (item != null) return new JsonResult(TinyMapper.Map<ItemViewModel>(item), DefaultJsonSettings);
+            if (item != null) return new JsonResult(Mapper.Map<ItemViewModel>(item), DefaultJsonSettings);
             else return NotFound(new { Error = String.Format("Item ID {0} has not been found", id) });
         }
 
@@ -64,7 +66,7 @@ namespace OpenGameListWebApp.Controllers
             if (ivm != null)
             {
                 // create a new Item with the client-sent json data
-                var item = TinyMapper.Map<Item>(ivm);
+                var item = Mapper.Map<Item>(ivm);
 
                 // override any property that could be wise to set from server-side only
                 item.CreatedDate =
@@ -79,7 +81,7 @@ namespace OpenGameListWebApp.Controllers
                 DbContext.SaveChanges();
 
                 // return the newly-created Item to the client.
-                return new JsonResult(TinyMapper.Map<ItemViewModel>(item), DefaultJsonSettings);
+                return new JsonResult(Mapper.Map<ItemViewModel>(item), DefaultJsonSettings);
             }
 
             // return a generic HTTP Status 500 (Not Found) if the client payload is invalid.
@@ -115,7 +117,7 @@ namespace OpenGameListWebApp.Controllers
                     DbContext.SaveChanges();
 
                     // return the updated Item to the client.
-                    return new JsonResult(TinyMapper.Map<ItemViewModel>(item), DefaultJsonSettings);
+                    return new JsonResult(Mapper.Map<ItemViewModel>(item), DefaultJsonSettings);
                 }
             }
 
@@ -232,7 +234,7 @@ namespace OpenGameListWebApp.Controllers
         private List<ItemViewModel> ToItemViewModelList(IEnumerable<Item> items)
         {
             var lst = new List<ItemViewModel>();
-            foreach (var i in items) lst.Add(TinyMapper.Map<ItemViewModel>(i));
+            foreach (var i in items) lst.Add(Mapper.Map<ItemViewModel>(i));
             return lst;
         }
 
